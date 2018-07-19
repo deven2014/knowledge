@@ -1,0 +1,11 @@
+# Linux alias Tips
+
+alias command is design for define abbreviations for commands.
+
+~/.bashrc 
+source ~/.bashrc
+define alias for user
+
+/etc/bashrc
+source /etc/bashrc
+define alias for all users
