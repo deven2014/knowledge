@@ -1,0 +1,5 @@
+# VirtualBox synchronize time
+
+Synchronize the guest time from host when guest is woke up from hibernation.
+
+sudo VBoxService
