@@ -1,0 +1,18 @@
+# Linux common commands example
+
+List common commands example of linux for fast reference
+
+df - report file system disk space usage
+
+usage:
+df
+
+find -
+
+grep -
+
+ls -
+
+ps -
+
+
