@@ -1,0 +1,11 @@
+# Linux file transfer
+
+Transfer file between windows and linux 
+
+use pftp (one of putty applications)
+
+pscp lanpower.zip deven@me2:/home/deven
+
+the server name 'deven@me2' can be either the real server ip or one putty saved session. The second case is very useful when you have to use a proxy to ssh your server since you can set the proxy in putty and save it as a session.
+
+
