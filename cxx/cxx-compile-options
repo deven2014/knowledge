@@ -1,0 +1,9 @@
+# CXX compile options 
+
+Common compile options usage
+
+[-I] include file path
+
+example:
+g++ -I ../catch2 app.cxx
+
