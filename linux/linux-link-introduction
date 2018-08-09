@@ -1,0 +1,86 @@
+# Linux link introduction 
+
+reference source:
+<https://www.linux.com/learn/intro-to-linux/2017/6/understanding-linux-links>
+
+JACK WALLEN
+JUNE 9, 2017
+Understanding Linux Links
+symbolic-links.jpg
+symbolic links
+Within Linux, there's more to links than just creating a shortcut to another location. Jack Wallen has details.
+Creative Commons Zero
+Pixabay
+Linux is, without a doubt, one of the single most flexible operating system platforms on the planet. With the flagship open source ecosystem, there is almost nothing you cannot do. What makes Linux so flexible? The answer to that question will depend on your needs. Suffice it to say, the list of answers is significant and starts from the kernel and works it way out to the desktop environment. This flexibility was built into the operating system from the beginning, borrowing quite a lot of features from UNIX. One such feature is links.
+
+What are links? I'm glad you asked.
+
+Links are a very handy way to create a shortcut to an original directory. Links are used in many instances: Sometimes to create a convenient path to a directory buried deep within the file hierarchy; other uses for links include:
+
+Linking libraries
+
+Making sure files are in constant locations (without having to move the original)
+
+Keeping a "copy" of a single file in multiple locations
+
+But aren't these just "shortcuts"?
+In a way, yes...but not exactly. Within the realm of Linux, there's more to links than just creating a shortcut to another location. Consider this: A shortcut is simply a pseudo-file that points to the original location of the file. For instance, create a shortcut on the Windows desktop to a particular folder and, when you click that icon, it will automatically open your file manager in the original location. On Linux, when you create a link in Linux, you click on that link and it will open the link in the exact location in which it was created.
+
+Let me explain. Say, for instance, you have an external drive, attached to your Windows machine. On that drive is a folder called Music. If you create a shortcut to the directory on your desktop, when you click to open the shortcut, your file manager will open to the Music directory on your external drive.
+
+Now, say you have that drive attached to a Linux machine. That drive is mounted to, say, /data and on that drive is the folder Music. You create a link to that location in your home directory--so you how have a link from ~/Music that points to /data/Music. If you open the shortcut in your home directory, it opens the file manager in ~/Music, instead of /data/Music. Any changes you make in ~/Music will automatically be reflected in /data/Music. And that is the big difference.
+
+Types of links
+In Linux there are two different types of links:
+
+Hard links
+
+Symbolic links
+
+The difference between the two are significant. With hard links, you can only link to files (and not directories); you cannot reference a file on a different disk or volume, and they reference the same inode as the original source. A hard link will continue to remain usable, even if the original file is removed.
+
+Symbolic links, on the other hand, can link to directories, reference a file/folder on a different disk or volume, will exist as a broken (unusable) link if the original location is deleted, reference abstract filenames and directories (as opposed to physical locations), and are given their own, unique inode.
+
+Now comes the fun part. How do you work with links? Let's find out how to create both hard and symbolic links.
+
+Working with hard links
+We're going to make this very simple. The basic command structure for creating a hard link is:
+
+ln SOURCE LINK
+Where SOURCE is the original file and LINK is the new file you will create that will point to the original source. So let's say we want to create a link pointing to /data/file1 and we want to create the link in the ~/ directory. The command for this would be:
+
+ln /data/file1 ~/file1
+The above command will create the file ~/file1 as a hard link to /data/file1. If you open up both files, you will see they have the exact same contents. If you alter the contents in one, the changes will reflect in both. One of the benefits of using hard links is that if you were to delete /data/file1, ~/file1 would still remain. If you want to simply remove the link, you can use the rm command like so:
+
+rm ~/file1
+Working with symbolic links
+The command structure for symbolic links works in the same manner as do hard links:
+
+ln -s SOURCE LINK
+The primary difference between hard and symbolic link creation, is that you use the -s option. Let's create a symbolic link from ~/file2 to /data/file2 in similar fashion as we did above, only we'll create a symbolic link, instead of a hard link. Here's how that would be accomplished:
+
+ln -s /data/file2 ~/file2 
+The above command will create a symbolic link from ~/file2 to the original location /data/file2. If you update the file in either location, it will update in both.
+
+It is also important to note that you can use symbolic links for directories. Say, for instance, you have /data/directory1 and you want to create a symbolic link to that directory in ~/. This is done in the same way as creating a link to a file:
+
+ln -s /data/directory1 ~/directory1
+The above command will create the link ~/directory1 which points to /data/directory1. You can then add to that directory from either location and the change will reflect in both.
+
+To see the difference between how each type of link looks from a terminal window, issue the command ls -li. You will see how each is represented with slight variation from one another (Figure 1).
+
+links_1.jpg
+Hard and symbolic links
+Figure 1: Both hard links and symbolic links represented in the terminal window.
+Used with permission
+One interesting thing of note is how inodes are treated by way of the different types of links. In Figure 1, you can see that the inode (string of characters in the first column) for the hard links are the same, whereas the inodes for the symbolic links are different. This can be further illustrated by removing the original location of the symbolic link. When you do that, the soft link goes away (although the broken referral link file remains behind). Why? The reference inode the symbolic link pointed to no longer exists.
+
+Unlike with hard links, if you delete the original file or directory, the symbolic link will remain, however it will now be considered a broken link and will be unusable. Remember, with hard links, you can remove the original and the link will remain and still be usable.
+
+Learn more
+Of course, you're going to want to know more about using links. If you issue the command man ln, you can read the manual page for the ln command and gain an even more in-depth understanding as to how links work.
+
+Learn more about Linux through the free "Introduction to Linux" course from The Linux Foundation and edX.
+
+
+
