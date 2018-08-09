@@ -16,3 +16,16 @@ ls -
 ps -
 
 
+- [tail] -
+
+tail - output the last part of files
+
+usage:
+
+tail [FILE]
+tail -f [FILE]
+
+  - the second example uses -f option to keep monitor the file. (useful for monitor log)
+
+
+
