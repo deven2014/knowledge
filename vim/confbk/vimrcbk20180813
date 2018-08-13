@@ -1,0 +1,71 @@
+" vim confiruation V1.0.0 -- by liang.deng/deven2012.deng@gmail.com
+
+" customized welcome pattern
+echo "-------- Vim - programming is the life ------\n\n\n"
+echo "\t\t\t>^.^<"
+echo "\n\n\n"
+
+
+set number
+
+" set tab as 4 space
+set tabstop=4
+set expandtab
+
+" map jk as esc, and disable esc
+inoremap <esc> <nop>
+inoremap jk <esc>
+
+" map jq as quit <jump quit>
+inoremap jq <esc>:q<cr>
+nnoremap jq <esc>:q<cr>
+
+" map jwq as write and quit <jump write quit>
+inoremap jwq <esc>:wq<cr>
+nnoremap jwq <esc>:wq<cr>
+
+let mapleader = "-"
+" define map leader as -
+
+" customized mapping
+
+" -ev edit user vimrc file
+noremap <leader>ev :vsplit $MYVIMRC<cr>
+
+" -sv active new vimrc update
+noremap <leader>sv :source $MYVIMRC<cr>
+
+" abbrevation @@ as my email
+iabbrev @@ deven2012.deng@gmail.com
+
+" abbrevation ccopy as copyright
+iabbrev ccopy Copyright 2018 Liang Deng, all rights reserved.
+
+" abbrevation signiture
+iabbrev ssig -- <cr>Liang Deng<cr>deven2012.deng@gmail.com
+
+" -" add "" surrounding the word
+nnoremap <leader>" viw<esc>a"<esc>hbi"<esc>lel
+
+" map comment cxx code
+nnoremap <leader>c 0wI//<esc>
+
+" apply pathogen plugin
+execute pathogen#infect()
+syntax on
+filetype plugin indent on
+
+" ctaglist 
+let Tlist_Show_One_File=1    
+let Tlist_Exit_OnlyWindow=1 
+let Tlist_Use_Right_Window=1
+let Tlist_Sort_Type="name" 
+
+" Omnicpp
+set completeopt=longest,menu
+let OmniCpp_NamespaceSearch = 2     
+let OmniCpp_ShowPrototypeInAbbr = 1 
+let OmniCpp_MayCompleteScope = 1    
+let OmniCpp_DefaultNamespaces = ["std", "_GLIBCXX_STD"]
+
+set tags+=~/.vim/tags/cpp_src/tags
