@@ -27,5 +27,10 @@ tail -f [FILE]
 
   - the second example uses -f option to keep monitor the file. (useful for monitor log)
 
+- [tar] -
+
+tar
+
+tar -zcvf xxx.tar.gz /path
 
 
