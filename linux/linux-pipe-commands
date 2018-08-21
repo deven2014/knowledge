@@ -1,0 +1,14 @@
+# Linux pipe commands 
+
+mknod fifo1 p
+or
+mkfifo fifo1
+
+Both these two way can create a name pipe. The second way is perferred.
+
+you can use these commands to run a example
+
+echo "test text" > fifo1
+cat < fifo1
+
+

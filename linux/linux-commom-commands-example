@@ -9,6 +9,9 @@ df
 
 find -
 
+useage:
+example: find . -name 'mace.*'
+
 grep -
 
 ls -
