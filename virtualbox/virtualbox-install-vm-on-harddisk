@@ -1,0 +1,59 @@
+Title:
+Using a Physical Hard Drive with a VirtualBox VM
+
+
+source reference:
+https://www.serverwatch.com/server-tutorials/using-a-physical-hard-drive-with-a-virtualbox-vm.html
+
+content:
+
+Though it's possible to create a virtual hard disk image from the existing contents of a physical drive, you might find it useful to directly mount or boot a physical drive on a virtual machine (VM).
+
+And while this is fairly easy to do with the GUI of VMware and Hyper-V when configuring a VM, that isn't the case with creating a VirtualBox physical disk, or a VirtualBox raw disk, Windows Server Tutorials in VirtualBox, as the process requires some CLI usage.
+
+VirtualBox can mount entire physical hard disks as well as only selected partitions of a drive. In today's tutorial, we will only discuss mounting entire VirtualBox physical hard disks.
+
+VirtualBox Raw Hard Disk Access
+This method is called VirtualBox "raw hard disk access." This allows you to mount or boot a secondary hard drive or external USB, for example. We'll show how to do this when running VirtualBox on a Windows, Linux or Mac OS X host machine.
+
+Warning: Do not attempt to mount or boot the partition that runs the host OS with a VM, as that can lead to severe data corruption. And no matter which drive or partition you want to mount, it's always a good idea to back up any existing data on it before continuing.
+
+You'll first want to create a virtual machine within the VirtualBox GUI. Choose all options like normal, but when asked about the virtual hard drive, select Do not add a virtual hard drive.
+
+Next, you'll need to find the path and drive number of the physical drive you'd like to mount:
+
+In Windows, open Disk Management. You'll see the associated drive numbers on the left and will identify them later as PhysicalDrive0, PhysicalDrive1, etc.
+
+In Linux, run the following command: sudo fdisk -l. You'll see a listing of the partitions. Make note of the desired drive in the format of dev/sda0, dev/sda1, etc.
+
+In Max OS X, use the following command: diskutil list. You'll see a listing of the partitions. Make note of the desired drive in the format of /dev/disk0, /dev/disk1, etc.
+
+Now open the CLI of your OS. If you're using Windows as the host OS you will also need to go to the root directory of VirtualBox using the following command: cd C:\Program Files\Oracle\VirtualBox
+
+Creating the VirtualBox Hard Drive
+Now you can run the command to create the virtual hard drive file that points to your desired physical drive. For each of the following examples ensure that you input the desired names between the arrows and replace the number or pound sign with your desired drive number.
+
+For Windows:
+
+VBoxManage internalcommands createrawvmdk -filename "C:\Users\<user_name>\VirtualBox VMs\<VM_folder_name>\<file_name>.vmdk" -rawdisk \\.\PhysicalDrive#
+
+For Linux:
+
+VBoxManage internalcommands createrawvmdk -filename "</path/to/file>.vmdk" -rawdisk /dev/sda
+
+For Mac OS X:
+
+VBoxManage internalcommands createrawvmdk -filename "</path/to/file>.vmdk" -rawdisk /dev/disk#
+
+This VMDK will be a very small file that simply points to your physical drive. Now you can attach the VMDK to your VM. To do so, open the VirtualBox GUI, select the desired VM, click Settings, click Storage, click Add Hard Disk button, select Choose existing drive, and then select the VMDK file you just created.
+
+You can now run the VM that will boot from the physical drive you defined when creating the VMDK file. If you need additional help you can refer to the official VirtualBox documentation on this topic.
+
+--- extra pratice tips in Win10 ---
+1. Should run the VM disk image creation cmd in adminstrator mode
+C:\Program Files\Oracle\VirtualBox>VBoxManage internalcommands createrawvmdk -filename "c:\Users\toold\VirtualBox VMs\pf6000dev\extradriver.vmdk" -rawdisk \\.\PhysicalDrive0
+RAW host disk access VMDK file c:\Users\toold\VirtualBox VMs\pf6000dev\extradriver.vmdk created successfully.
+
+2. Should run the VirtualBox program in adminstrator mode 
+
+
