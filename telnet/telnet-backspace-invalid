@@ -1,0 +1,5 @@
+# Telnet backspace invalid
+
+Problem: When telnet to host, can't delete the character by backspace key.
+Solution: Use Ctrl + Backspace or Ctrl + H can delete the previous character.
+
