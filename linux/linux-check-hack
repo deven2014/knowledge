@@ -1,0 +1,30 @@
+# Linux check hack  
+
+simple way to check how many hosts tried to get hack the root password
+
+grep "Failed password for root" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -nr | more
+
+
+the example will shows like this:
+
+root@localhost:/var/log# grep "Failed password for root" /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -nr | more
+   2502 Failed
+   1927 58.218.92.23
+    376 61.184.247.5
+    244 61.184.247.8
+    223 61.184.247.2
+    200 61.184.247.7
+    194 58.218.205.75
+    155 115.238.245.2
+    134 61.184.247.4
+    130 122.226.181.165
+    124 61.184.247.10
+    124 115.238.245.4
+    114 61.184.247.6
+    102 61.184.247.3
+     92 115.238.245.8
+     83 122.226.181.167
+     79 206.189.222.99
+     69 115.238.245.14
+
+then one can see the first record shows total 1927 times attempt to hack the root user password.
