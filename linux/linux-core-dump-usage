@@ -1,0 +1,16 @@
+# Linux core dump usage
+
+The simple introduction of core dump
+
+- ulimit -c 
+check the core dump switch, none zero will generate core dump.
+
+- ulimit -c unlimited
+- ulimit -c 1024 
+
+both the two commands can set core dump file size.
+
+gdb ./xxx.out core.xxx
+bt
+f N
+other gdb commands

@@ -14,6 +14,11 @@ example: find . -name 'mace.*'
 
 grep -
 
+usage:
+
+grep -r 'xxxx' --include=\*.cpp  
+the --include option is useful for filter file type 
+
 ls -
 
 ps -
