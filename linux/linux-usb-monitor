@@ -1,0 +1,15 @@
+# Linux Usb Monitor 
+
+use usbmon to monitro usb data traffic
+
+sudo mount -t debugfs none /sys/kernel/debug
+sudo modprobe usbmon
+sudo ls /sys/kernel/debug/usb/usbmon
+sudo cat /sys/kernel/debug/usb/devices
+sudo cat /sys/kernel/debug/usb/usbmon/0u
+
+0u can be 1u/xu, 0u means monitor all usb ports.
+
+this link can get more detail information.
+https://www.kernel.org/doc/Documentation/usb/usbmon.txt
+

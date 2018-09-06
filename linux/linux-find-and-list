@@ -1,0 +1,7 @@
+# Linux Find and List
+
+find files and list with detail.
+
+find ./ -name 'Controller.out' -exec ls -l {} \;
+
+
