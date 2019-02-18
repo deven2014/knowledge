@@ -9,6 +9,7 @@ Version: 0.1
 Revesion history:
 2019-01-03, initiated version. v0.1
 2019-02-14, added simple ui mode. v0.2
+2019-02-18, correct ui mode. v0.2
 """
 def getchar():
     try:
@@ -137,18 +138,18 @@ class LearnWords:
             #print('user input:', s)
             if s == 'n':
                 #print('Keep this word to forgot list.')
-                print('review words: ', self.m_review_words)
+                self.hint_print('review words: ', self.m_review_words)
                 return
         else:
             #print('Keep this word to forgot list.')
             self.hint_print_words('Explantation:')
             print(' ', en[cur])
-            print('review words: ', self.m_review_words)
+            self.hint_print('review words: ', self.m_review_words)
             return
 
         # Remove this word from review list since the user know it.
         self.m_review_words.remove(cur)
-        print('review words: ', self.m_review_words)
+        self.hint_print('review words: ', self.m_review_words)
 
 
     def learn_word(self, cur):
@@ -170,13 +171,13 @@ class LearnWords:
             if s == 'n':
                 #print('Add this word to forgot list.')
                 self.m_review_words.append(cur)
-                print('review words: ', self.m_review_words)
+                self.hint_print('review words: ', self.m_review_words)
         else:
             #print('Add this word to forgot list.')
             self.m_review_words.append(cur)
             self.hint_print_words('Explantation:')
             print(' ', en[cur])
-            print('review words: ', self.m_review_words)
+            self.hint_print('review words: ', self.m_review_words)
 
         self.m_cursor -= 1
 
