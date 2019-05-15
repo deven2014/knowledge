@@ -1,0 +1,57 @@
+iMemory library
+
+iMemory library is a library which provides an intelligent way to store and 
+organize user's learning data for learning words.
+
+The data model of the user's learning data:
+
+learningData
+{
+  uid:"",            /* 128 bit UUID */
+  studyingWords: [
+    "a", "b", "c"
+  ] 
+  masteredWords: [
+    "d", "e", "f"
+  ]
+  words: [
+    {
+      text: "good",
+      refid: 123456,                /* Integer */ 
+      learnHistory: "100101010",    /* 1: correct, 0: incorrect */
+      showHistory: "100101010",     /* 1: shown, 0: not shown */
+      masteredScore: 98,            /* 0 - 100 */
+      familiarScore: 10,            /* 0 - 100 */
+      learnedTime: 12312            /* Integer, seconds */
+    } ,
+    {
+      ...
+    }
+  ]
+
+
+}
+
+
+learningHistory   /* Original BigData: Snapshot for each word in learning situation */
+{
+  [
+    {
+      time:
+      learnedTime:
+      answer:
+      learnHistory
+      showHistory
+    }
+  ]
+
+}
+
+
+
+
+
+
+
+
+The algorithms work on top of the user's learning data:
