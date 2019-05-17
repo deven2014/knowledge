@@ -1,13 +1,19 @@
 iMemory library
 
+1.
+
 iMemory library is a library which provides an intelligent way to store and 
 organize user's learning data for learning words.
+
+2.
 
 The data model of the user's learning data:
 
 learningData
 {
   uid:"",            /* 128 bit UUID */
+  dataindex "",         /* global id in system for each learning data */
+  description "",       /* Description for the usage of the data */
   studyingWords: [
     "a", "b", "c"
   ] 
@@ -18,8 +24,7 @@ learningData
     {
       text: "good",
       refid: 123456,                /* Integer */ 
-      learnHistory: "100101010",    /* 1: correct, 0: incorrect */
-      showHistory: "100101010",     /* 1: shown, 0: not shown */
+      learnHistory: "100101010",    /* Last 20 times 1: correct, 0: incorrect */
       masteredScore: 98,            /* 0 - 100 */
       familiarScore: 10,            /* 0 - 100 */
       learnedTime: 12312            /* Integer, seconds */
@@ -37,21 +42,56 @@ learningHistory   /* Original BigData: Snapshot for each word in learning situat
 {
   [
     {
-      time:
-      learnedTime:
-      answer:
-      learnHistory
-      showHistory
+      time:                         /* UTC time */
+      learnedTime:                  /* Seconds in learning */
+      answer:                       /* true, false */
     }
   ]
 
 }
 
 
+Data os stored as text files with JSON format. 
 
+Each user learning data is a file with five backups in different folders:
+  - 1 day ago
+  - 3 days ago
+  - 1 weeks ago 
+  - 1 month ago
+  - 3 month ago
 
+Data of learning hisory will no backup data. Each user_dataindex one dir, each word 
+learning history is stored in one JSON file.
 
+Cache mechanism may needed when the program wants to get one user's history data 
+for analysis.
 
+Multiple language supporting can be realized by each user have several data 
+for each language.
 
+3.
 
 The algorithms work on top of the user's learning data:
+
+4.
+
+Basic interfaces:
+
+add_user_data(uid, desc)               /* Initiate a new user learning data */
+  - return dataindex
+
+/* Called in each time learn a word */
+learn_word(text, dataindex, learnedTime, answer) 
+  - void
+
+/* The word will be set as the highest mastered in learning data*/
+master_word(text, dataindex)
+
+/* The word scores will be set to 0, but history data will not be cleaned */ 
+reset_word(text, dataindex)
+
+get_user_data(uid, dataindex)
+
+get_user_learning_history(uid, dataindex)
+
+
