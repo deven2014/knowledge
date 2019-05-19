@@ -51,7 +51,7 @@ learningHistory   /* Original BigData: Snapshot for each word in learning situat
 }
 
 
-Data os stored as text files with JSON format. 
+Data is stored as text files with JSON format. 
 
 Each user learning data is a file with five backups in different folders:
   - 1 day ago
@@ -60,8 +60,20 @@ Each user learning data is a file with five backups in different folders:
   - 1 month ago
   - 3 month ago
 
-Data of learning hisory will no backup data. Each user_dataindex one dir, each word 
-learning history is stored in one JSON file.
+Data of learning hisory will no backup data. Each dataindex one dir, each 
+word learning history is stored in one JSON file. None english language has 
+asc code problem, so use a "word2index.json" to find the history word file. 
+
+An example for data storage:
+uid: 'agbx-dsdd-xsdf-dsdf'
+index: '0000-0001'
+uid2index.json         /* Index for uid to index
+/0000-0001
+  0000-0001.json       /* learning data */
+  word2index.json      /* word to index data */
+  /lh                  /* learning history data */
+    0000-0001.json     /* for example represent 'jag' in Swedish */
+    0000-0002.json
 
 Cache mechanism may needed when the program wants to get one user's history data 
 for analysis.
