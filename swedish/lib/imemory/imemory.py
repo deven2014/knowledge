@@ -11,19 +11,19 @@ class iMemory:
     """
     mVersion = '1.0.0' 
     mDesc = 'iMemory library. Design for efficient memory for learning languages.'
-    mDebug = False
-    mLearningData = {}
-    mLearningHistory = {}
-    mActive = False
     def __init__(self, uid, debug = False):
+
+        self.mLearningData = {}
+        self.mLearningHistory = {}
+        self.mActive = False
         self.mDebug = debug
         self.simplelog("iMemory object created.")
 
         # Load data failure
         if(not self.load_data(uid)):
             self.simplelog("Load user data failure!")
-            mActive = False
-        mActive = True
+            self.mActive = False
+        self.mActive = True
 
     def __str__(self):
         return(self.mDesc + '\nVersion ' + self.mVersion)
@@ -38,7 +38,6 @@ class iMemory:
         with open(index_file, 'r') as index_fd:
             try:
                 index_data = json.load(index_fd)
-                print(index_data)
             except:
                 self.simplelog('Index file load failure!')
                 index_data = {}
@@ -47,23 +46,26 @@ class iMemory:
         # If find index by uid then initiate data by this index 
         if(uid in index_data):
             index = index_data[uid]
-            mLearningData = self.get_user_data(uid, index)
+            ret = self.get_user_data(uid, index)
         else:    # Otherwise generate a new index by the uid
             index = index_data['index']
-            index_data['index'] += 1
             # Generate a (uid, index) pair and add it to index data
             index_data[uid] = index_data['index'] 
             
-            # Add a new learing data by uid and index
-            mLearningData = self.add_user_data(uid, index)
+            # Add a new learing data by uid and index, if successfully update
+            # index data.
+            ret = self.add_user_data(uid, index)
+            if(ret):
+                # Valid index add 1
+                index_data['index'] += 1
+                self.write_index_data(index_data)
 
-        # Update index if load user data successfully 
-        if(mLearningData != {}):
-            self.write_index_data(index_data)
+        # If load user data successfully 
+        if(ret):
+            self.simplelog('load user learning data successfully.')
         else:
             self.simplelog('load user learning data failure!')
-            return False
-        return True
+        return ret 
 
     def write_index_data(self, index_data):
         """
@@ -79,9 +81,13 @@ class iMemory:
                 self.simplelog('Index data is failure in saving!')
 
     def add_user_data(self, uid, dataindex):
+        """
+        Add a new user data file and initiate it
+        For internal use only. 
+        """
         user_data_path = os.path.join(g_data_path, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex)) 
-        # If no index dir then create it
+        # If no user data dir then create it
         if os.path.isdir(user_data_path):
             self.simplelog('User data dir exists.')
         else:
@@ -91,21 +97,41 @@ class iMemory:
         if os.path.isfile(user_data_file):
             self.simplelog('User data file exists. add user data failure!')
             return False
-        else
+        else:
             self.mLearningData['uid'] = uid
             self.mLearningData['dataindex'] = str(dataindex)
 
             with open(user_data_file, 'w+') as fd:
-            try:
-                json.dump(self.mLearningData, fd)
-                self.simplelog('new user data saved.')
-                return True 
-            except:
-                self.simplelog('new user data is failure in saving!')
-                return False 
+                try:
+                    json.dump(self.mLearningData, fd)
+                    self.simplelog('new user data saved.')
+                    return True 
+                except:
+                    self.simplelog('new user data is failure in saving!')
+                    return False 
 
     def get_user_data(self, uid, dataindex):
-        return 0
+        """
+        Get a new user data fro a user data file
+        For internal use only. 
+        """
+        user_data_path = os.path.join(g_data_path, str(dataindex))
+        user_data_file = os.path.join(user_data_path, str(dataindex)) 
+        # If no user data dir or user data file then then return false 
+        if (not os.path.isdir(user_data_path) or  
+            not os.path.isfile(user_data_file)):
+            self.simplelog('User data dir or file does not exist.')
+            return False
+        
+        # If there is index data file then add user data failure 
+        with open(user_data_file, 'r') as fd:
+            try:
+                self.mLearningData = json.load(fd)
+                self.simplelog('User data loaded successfully.')
+                return True 
+            except:
+                self.simplelog('User data loaded failure!')
+                return False 
 
     # Interfaces 
     def reset_word(self, text, dataindex):
