@@ -2,38 +2,64 @@ import os
 import json
 
 # data dir, can be extend for configurable
-g_data_path = './data'
-g_uid2index_file = 'uid2index.json'
-g_word2index_file = 'word2index.json'
+DATA_PATH = './data'
+UID_2_INDEX_FILE = 'uid2index.json'
+WORD_2_INDEX_FILE = 'word2index.json'
 class iMemory:
     """
 
     """
-    mVersion = '1.0.0' 
-    mDesc = 'iMemory library. Design for efficient memory for learning languages.'
-    def __init__(self, uid, debug = False):
+    version = '1.0.0' 
+    desc = 'iMemory library. Design for efficient memory for learning languages.'
 
-        self.mLearningData = {}
-        self.mLearningHistory = {}
-        self.mActive = False
-        self.mDebug = debug
+    # Configuration
+    language_dict_dir = 'dict'
+    language_dict_files = {'en': 'en.list', 'sv': 'sv.list'}
+
+    def __init__(self, uid, language = 'en', debug = False):
+        self.learning_data = {}
+        self.learning_history = {}
+        self.words = []
+        self.active = False
+        self.language = language
+        self.debug = debug
         self.simplelog("iMemory object created.")
 
-        # Load data failure
-        if(not self.load_data(uid)):
+        # Load module data according configuration
+        if(not self.load_module_data(language)):
+            self.simplelog("Load module data failure!")
+            self.active = False
+            return
+
+        # Load user data
+        if(not self.init_user_data(uid)):
             self.simplelog("Load user data failure!")
-            self.mActive = False
-        self.mActive = True
+            self.active = False
+            return
+        self.active = True
 
     def __str__(self):
-        return(self.mDesc + '\nVersion ' + self.mVersion)
+        return(self.desc + '\nVersion ' + self.version)
 
     def simplelog(self, text):
-        if(self.mDebug):
+        if(self.debug):
             print(text)
 
-    def load_data(self, uid):
-        index_file = os.path.join(g_data_path, g_uid2index_file)
+    def load_module_data(self, language):
+        """
+        """
+        if not (language in language_dict_files):
+            self.simplelog("language dict configuration miss!")
+            return False
+
+        language_dict_file = os.path.join(DATA_PATH, 
+                self.language_dict_files[language])
+
+        with open(index_file, 'r') as index_fd:
+            # Read word list to a tuple 
+
+    def init_user_data(self, uid):
+        index_file = os.path.join(DATA_PATH, UID_2_INDEX_FILE)
         index_data = {}
         with open(index_file, 'r') as index_fd:
             try:
@@ -72,7 +98,7 @@ class iMemory:
         Save uid to index data to data file
         For internal use only. 
         """
-        index_file = os.path.join(g_data_path, g_uid2index_file)
+        index_file = os.path.join(DATA_PATH, UID_2_INDEX_FILE)
         with open(index_file, 'w+') as fd:
             try:
                 json.dump(index_data, fd)
@@ -85,7 +111,7 @@ class iMemory:
         Add a new user data file and initiate it
         For internal use only. 
         """
-        user_data_path = os.path.join(g_data_path, str(dataindex))
+        user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex)) 
         # If no user data dir then create it
         if os.path.isdir(user_data_path):
@@ -98,12 +124,12 @@ class iMemory:
             self.simplelog('User data file exists. add user data failure!')
             return False
         else:
-            self.mLearningData['uid'] = uid
-            self.mLearningData['dataindex'] = str(dataindex)
+            self.learning_data['uid'] = uid
+            self.learning_data['dataindex'] = str(dataindex)
 
             with open(user_data_file, 'w+') as fd:
                 try:
-                    json.dump(self.mLearningData, fd)
+                    json.dump(self.learning_data, fd)
                     self.simplelog('new user data saved.')
                     return True 
                 except:
@@ -115,7 +141,7 @@ class iMemory:
         Get a new user data fro a user data file
         For internal use only. 
         """
-        user_data_path = os.path.join(g_data_path, str(dataindex))
+        user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex)) 
         # If no user data dir or user data file then then return false 
         if (not os.path.isdir(user_data_path) or  
@@ -126,7 +152,7 @@ class iMemory:
         # If there is index data file then add user data failure 
         with open(user_data_file, 'r') as fd:
             try:
-                self.mLearningData = json.load(fd)
+                self.learning_data = json.load(fd)
                 self.simplelog('User data loaded successfully.')
                 return True 
             except:

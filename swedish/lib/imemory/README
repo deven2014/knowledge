@@ -7,6 +7,24 @@ organize user's learning data for learning words.
 
 2.
 
+The global configuration and data mode for iMemory library, the 
+configuration items are stored as class members. In the furture can design 
+mechanism to read config file and set confiruation by interfaces. 
+
+systemConfig
+{
+  "datapath":   "./data"
+  "landictpath": "dict"          /* data/dict/ */
+  "langdictfiles":              /* Multiple languages dict files */
+  {
+    "en": "en.list",            /* English */
+    "sv": "sv.list"             /* Swedish */
+  }
+}
+
+
+3.
+
 The data model of the user's learning data:
 
 learningData
@@ -81,11 +99,11 @@ for analysis.
 Multiple language supporting can be realized by each user have several data 
 for each language.
 
-3.
+4.
 
 The algorithms work on top of the user's learning data:
 
-4.
+5.
 
 Basic interfaces:
 
