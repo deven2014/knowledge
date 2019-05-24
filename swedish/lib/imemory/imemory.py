@@ -16,10 +16,11 @@ class iMemory:
     language_dict_dir = 'dict'
     language_dict_files = {'en': 'en.list', 'sv': 'sv.list'}
 
+
     def __init__(self, uid, language = 'en', debug = False):
         self.learning_data = {}
         self.learning_history = {}
-        self.words = []
+        self.words = None 
         self.active = False
         self.language = language
         self.debug = debug
@@ -48,15 +49,17 @@ class iMemory:
     def load_module_data(self, language):
         """
         """
-        if not (language in language_dict_files):
+        if not (language in self.language_dict_files):
             self.simplelog("language dict configuration miss!")
             return False
 
-        language_dict_file = os.path.join(DATA_PATH, 
+        language_dict_file = os.path.join(DATA_PATH, self.language_dict_dir,
                 self.language_dict_files[language])
 
-        with open(index_file, 'r') as index_fd:
+        with open(language_dict_file, 'r') as dict_fd:
             # Read word list to a tuple 
+            self.words = tuple(dict_fd.read().split('\n'))
+            return True
 
     def init_user_data(self, uid):
         index_file = os.path.join(DATA_PATH, UID_2_INDEX_FILE)
@@ -126,6 +129,7 @@ class iMemory:
         else:
             self.learning_data['uid'] = uid
             self.learning_data['dataindex'] = str(dataindex)
+            self.learning_data['last_learned_word'] = ('', -1) 
 
             with open(user_data_file, 'w+') as fd:
                 try:
@@ -167,4 +171,34 @@ class iMemory:
         return 0
 
     def get_user_learning_history(self, uid, dataindex):
+        return 0
+
+
+    def get_next_new_word(self):
+        """
+        Require a new word for learning.
+        """
+        # No learned word index, return empty record 
+        if 'last_learned_word' not in self.learning_data:
+            self.simplelog('No valid learned word index!')
+            return ('', -1)
+
+        index = self.learning_data['last_learned_word'][1]
+        word = self.words[index + 1]
+
+        # TODO: index may exceed the maximun words
+        return (index + 1, word)
+
+    def learn_word(self, word, learned_time, answer):
+        """
+        Notify that the user has learned a word, requires update learning data 
+        of the user and relavent history data.
+        """
+        self.learning_data['last_learned_word'] = word 
+
+    def delete_word(self, word_text):
+        """
+        Completely delete a word in word list. Can't delete one word which has 
+        a history record
+        """
         return 0

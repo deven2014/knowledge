@@ -32,6 +32,7 @@ learningData
   uid:"",            /* 128 bit UUID */
   dataindex "",         /* global id in system for each learning data */
   description "",       /* Description for the usage of the data */
+  lastLearningWord: (text, index)    /* word text and index in word list */
   studyingWords: [
     "a", "b", "c"
   ] 
