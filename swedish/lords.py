@@ -227,7 +227,7 @@ class LearnWords(object):
         """
         word, index = self.imemory.get_next_new_word()
         word_translation = self.translator.query(word)
-        word_answer = False
+        word_answer = True
         # TODO:Get time
         print(word, flush=True)
         self.hint_print('\n -- Enter \'y\' to indicate you know it. otherwise type \'n\'')

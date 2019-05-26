@@ -27,35 +27,25 @@ systemConfig
 
 The data model of the user's learning data:
 
-learningData
+learning_data
 {
   uid:"",            /* 128 bit UUID */
   dataindex "",         /* global id in system for each learning data */
   description "",       /* Description for the usage of the data */
-  lastLearningWord: (text, index)    /* word text and index in word list */
-  studyingWords: [
-    "a", "b", "c"
-  ] 
-  masteredWords: [
-    "d", "e", "f"
-  ]
-  words: [
-    {
-      text: "good",
-      refid: 123456,                /* Integer */ 
-      learnHistory: "100101010",    /* Last 20 times 1: correct, 0: incorrect */
-      masteredScore: 98,            /* 0 - 100 */
-      familiarScore: 10,            /* 0 - 100 */
-      learnedTime: 12312            /* Integer, seconds */
-    } ,
-    {
-      ...
-    }
-  ]
-
-
+  new_word_index: 0     /* Next new word index in dict 
+  last_learned_word: 'text'   /* last learned word */
+  studying_words: [ "a", "b", "c" ] 
+  mastered_words: [ "d", "e", "f" ]
+  learned_words: { 
+    'good': {
+      ref_idex: 123456,              /* Integer */ 
+      learn_history: "100101010",    /* Last 20 times 1: correct, 0: incorrect */
+      mastered_score: 98,            /* 0 - 100 */
+      familiar_score: 1000,          /* 0 - 1000*/
+      total_learned_time: 12312      /* Integer, seconds */
+    } , ...
+  }
 }
-
 
 learningHistory   /* Original BigData: Snapshot for each word in learning situation */
 {
@@ -68,6 +58,15 @@ learningHistory   /* Original BigData: Snapshot for each word in learning situat
   ]
 
 }
+
+- the way to calculate a mastered_score and familiar_score
+find out a suitable curl for represent a learnig score
+25 - 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1
+1     1  2  2  2  3  3  3  4  4  4  5  5  6  6  7  9 12 15 = 100
+
+
+
+
 
 
 Data is stored as text files with JSON format. 
