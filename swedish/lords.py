@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
+import lib.translator.translator as translator
+import lib.imemory.imemory as imemory
 
 """
 Author: Liang Deng
@@ -10,6 +12,7 @@ Revesion history:
 2019-01-03, initiated version. v0.1
 2019-02-14, added simple ui mode. v0.2
 2019-02-18, correct ui mode. v0.2
+2019-05-25, rewrite LearnWords class for iMemory engine support v0.3
 """
 def getchar():
     try:
@@ -31,7 +34,7 @@ def getchar():
         termios.tcsetattr(fd, termios.TCSADRAIN, oldSettings) 
     return answer 
 
-class LearnWords:
+class OLearnWords:
     m_fn_sv = 'dict-sv'
     m_fn_en = 'dict-en'
     m_policy = ''
@@ -44,12 +47,12 @@ class LearnWords:
     # if simple_ui is 1 not show any remind information
     m_simple_ui = 0
 
-    def __init__(self, learn_index, path='./', policy = 'SIMPLE', simple_ui = 0):
+    def __init__(self, policy, simple_ui = 0, learn_index = 0):
         """
         - default policy is SIMPLE
         - further policys may be added in the furture
         """
-        self.m_f_path = path
+        self.m_f_path = './' 
         self.m_policy = policy
         self.m_simple_ui = simple_ui
         self.m_start_index = int(learn_index)
@@ -181,22 +184,100 @@ class LearnWords:
 
         self.m_cursor -= 1
 
+class LearnWords(object):
+    """
+    New LearnWords class using iMemory engine
+    """
+
+    def __init__(self, policy, simple_ui = 0, learn_index = 0):
+        """
+        """
+        self.policy = policy
+        self.simple_ui = simple_ui
+        self.start_index = int(learn_index)
+        print(self.__str__())
+        self.output_config()
+
+        # Initiate Translator and iMemory instances
+        self.translator = translator.Translator('sv', 'en', True)
+        self.imemory = imemory.iMemory('usr1', 'sv', True)
+
+    def __str__(self):
+        return('Learn words class V0.3. \nAuthor Liang Deng 2019.05.')
+
+    def output_config(self):
+        print("\n------------------------------------")
+        print("     Policy: ", self.policy)
+        print("  Simple UI: ", self.simple_ui)
+        print("Start index: ", self.start_index, '\n')
+
+    def hint_print(self, *args):
+        # simple ui will not print hint info
+        #print('simple_ui is', self.m_simple_ui)
+        if not self.simple_ui:
+            print(*args)
+
+    def hint_print_words(self, *args):
+        # simple ui will not print hint info
+        if not self.simple_ui:
+            print(*args, end='', flush=True)
+
+    def run(self):
+        """
+        """
+        word, index = self.imemory.get_next_new_word()
+        word_translation = self.translator.query(word)
+        word_answer = False
+        # TODO:Get time
+        print(word, flush=True)
+        self.hint_print('\n -- Enter \'y\' to indicate you know it. otherwise type \'n\'')
+        s = getchar()
+        if s == '\n' or s == 'y':
+            self.hint_print_words('Explantation:')
+            print(' ', word_translation)
+            self.hint_print(' -- Enter or \'y\' to indicate your answer is correct. otherwise type \'n\' or any key')
+            s = getchar()
+            if s == 'n':
+                word_answer = False
+        else:
+            word_answer = False
+            self.hint_print_words('Explantation:')
+            print(' ', word_translation)
+        self.imemory.learn_word(word, 10, word_answer)
+
+        return 1
+
 if __name__ == '__main__':
     argc = len(sys.argv)
-    path = ''
+    engine_type = 'SIMPLE'
     ui_mode = 0
+    index = -1
     #print('run cmd with argc:', argc)
     #for cmd in sys.argv:
     #    print(cmd)
-    
-    if argc < 2:
-        print ('The legal command takes at least one parameter as index.')
-        exit()
 
-    if argc > 2:
-        ui_mode = sys.argv[2]
+    if argc == 1:
+        engine_type = 'IMEMORY'
+    else:
+        engine_type = sys.argv[1]
+        if engine_type == 'IMEMORY' and argc > 2:
+            ui_mode = sys.argv[2]
+        if engine_type == 'SIMPLE':
+            if argc > 2:
+                ui_mode = sys.argv[2]
+            if argc > 3:
+                index = sys.argv[3]
 
-    lw = LearnWords(sys.argv[1], './', 'SIMPLE', ui_mode)
+    print('Learning engine is ', engine_type)
+    print(ui_mode, index)
+
+    # TODO: LearnWord is a seperate module, in the furture there will be 
+    # Other modules like LearnRead, etc.
+    if engine_type == 'SIMPLE':
+        lw = OLearnWords(engine_type, ui_mode, index)
+    else:
+        lw = LearnWords(engine_type, ui_mode, index)
+
     while lw.run():
         pass
     print('Learn words finished.')

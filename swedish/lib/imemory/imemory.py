@@ -2,14 +2,15 @@ import os
 import json
 
 # data dir, can be extend for configurable
-DATA_PATH = './data'
+MODULE_PATH = os.path.dirname(__file__)
+DATA_PATH = os.path.join(MODULE_PATH, 'data')
 UID_2_INDEX_FILE = 'uid2index.json'
 WORD_2_INDEX_FILE = 'word2index.json'
 class iMemory:
     """
 
     """
-    version = '1.0.0' 
+    version = '1.0.0'
     desc = 'iMemory library. Design for efficient memory for learning languages.'
 
     # Configuration
@@ -20,7 +21,7 @@ class iMemory:
     def __init__(self, uid, language = 'en', debug = False):
         self.learning_data = {}
         self.learning_history = {}
-        self.words = None 
+        self.words = None
         self.active = False
         self.language = language
         self.debug = debug
@@ -115,13 +116,13 @@ class iMemory:
         For internal use only. 
         """
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
-        user_data_file = os.path.join(user_data_path, str(dataindex)) 
+        user_data_file = os.path.join(user_data_path, str(dataindex))
         # If no user data dir then create it
         if os.path.isdir(user_data_path):
             self.simplelog('User data dir exists.')
         else:
             os.mkdir(user_data_path)
-        
+
         # If there is index data file then add user data failure 
         if os.path.isfile(user_data_file):
             self.simplelog('User data file exists. add user data failure!')
@@ -129,30 +130,30 @@ class iMemory:
         else:
             self.learning_data['uid'] = uid
             self.learning_data['dataindex'] = str(dataindex)
-            self.learning_data['last_learned_word'] = ('', -1) 
+            self.learning_data['last_learned_word'] = ('', -1)
 
             with open(user_data_file, 'w+') as fd:
                 try:
                     json.dump(self.learning_data, fd)
                     self.simplelog('new user data saved.')
-                    return True 
+                    return True
                 except:
                     self.simplelog('new user data is failure in saving!')
-                    return False 
+                    return False
 
     def get_user_data(self, uid, dataindex):
         """
         Get a new user data fro a user data file
-        For internal use only. 
+        For internal use only.
         """
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
-        user_data_file = os.path.join(user_data_path, str(dataindex)) 
+        user_data_file = os.path.join(user_data_path, str(dataindex))
         # If no user data dir or user data file then then return false 
-        if (not os.path.isdir(user_data_path) or  
+        if (not os.path.isdir(user_data_path) or
             not os.path.isfile(user_data_file)):
             self.simplelog('User data dir or file does not exist.')
             return False
-        
+
         # If there is index data file then add user data failure 
         with open(user_data_file, 'r') as fd:
             try:
@@ -184,17 +185,17 @@ class iMemory:
             return ('', -1)
 
         index = self.learning_data['last_learned_word'][1]
-        word = self.words[index + 1]
+        word_text = self.words[index + 1]
 
         # TODO: index may exceed the maximun words
-        return (index + 1, word)
+        return (word_text, index + 1)
 
     def learn_word(self, word, learned_time, answer):
         """
         Notify that the user has learned a word, requires update learning data 
         of the user and relavent history data.
         """
-        self.learning_data['last_learned_word'] = word 
+        self.learning_data['last_learned_word'] = (word, -1)
 
     def delete_word(self, word_text):
         """
