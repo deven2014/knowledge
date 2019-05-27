@@ -225,7 +225,7 @@ class LearnWords(object):
     def run(self):
         """
         """
-        word, index = self.imemory.get_next_new_word()
+        word, index = self.imemory.get_next_learn_word()
         word_translation = self.translator.query(word)
         word_answer = True
         # TODO:Get time

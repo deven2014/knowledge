@@ -7,10 +7,14 @@ DATA_PATH = os.path.join(MODULE_PATH, 'data')
 UID_2_INDEX_FILE = 'uid2index.json'
 WORD_2_INDEX_FILE = 'word2index.json'
 
+# A max score of mastered_score
+MASTERED_SCORE_MAX = 100
 # How long a mastered word should be reviewed at least once
-WORD_MUST_REVIEW = 1000
+WORD_MUST_REVIEW_TIME = 100
 # Maximum 100 words in learning.
-LEARNING_WORD_WINDOW = 100
+LEARNING_WORD_WINDOW = 10
+
+MAX_HISTORY_RECORDS = 25
 # Mastered score counting config, total 100
 # 5,7,15,24,49. 25 times correct will get 100 score
 MASTERED_SCORE_COUNT_CONFIG = (1, 1, 1, 1, 1,
@@ -210,6 +214,48 @@ class iMemory:
     def get_user_learning_history(self, uid, dataindex):
         return 0
 
+    def get_next_learn_word(self):
+        """
+        Return a new word or learned/mastered word depends on the stat
+        """
+        studying_words = self.learning_data['studying_words']
+        mastered_words = self.learning_data['mastered_words']
+        learned_words = self.learning_data['learned_words']
+
+        ret_word = ''
+
+        # If there is mastered word needs to be reviewed. return it.
+        for word in mastered_words:
+            learned_word = learned_words[word]
+            if learned_word['familiar_score'] <= 0:
+                ret_word = word
+                # TODO: exception process needed
+                self.simplelog("Review a mastered word.")
+                return (ret_word, self.words_index[ret_word])
+
+        """
+        Discarded
+        # The word with lowest score will be returned
+        min_mastered_score = MASTERED_SCORE_MAX
+        if(len(studying_words) >= LEARNING_WORD_WINDOW):
+            for word in studying_words:
+                learned_word = learned_words[word]
+                if learned_word['mastered_score'] < min_mastered_score:
+                    min_mastered_score = learned_word['mastered_score']
+                    ret_word = word
+        if ret_word:
+            self.simplelog("Review a studying word.")
+            return (ret_word, self.words_index[ret_word])
+        """
+        # If the studying words exceed the windows size, return from this list
+        # Return the studying word in the head of queue(first one in list)
+        if(len(studying_words) >= LEARNING_WORD_WINDOW):
+            ret_word = studying_words[0]
+            self.simplelog("Review a studying word.")
+            return (ret_word, self.words_index[ret_word])
+        else:
+            self.simplelog("Learn a new word.")
+            return self.get_next_new_word()
 
     def get_next_new_word(self):
         """
@@ -231,6 +277,7 @@ class iMemory:
         Notify that the user has learned a word, requires update learning data
         of the user and relavent history data.
         """
+        print('learn_word(', word, learned_time, answer, ')')
         self.learning_data['last_learned_word'] = word
         # If it is a new word move new_word_index to next
         if( (self.words_index[word]) == self.learning_data['new_word_index']):
@@ -245,23 +292,50 @@ class iMemory:
             learned_words[word]['learn_history'] = ''
             learned_words[word]['ref_index'] = -1
             learned_words[word]['mastered_score'] = 0      # 0 - 100
-            learned_words[word]['familiar_score'] = 1000   # 0 - 1000
+            learned_words[word]['familiar_score'] = WORD_MUST_REVIEW_TIME
             learned_words[word]['total_learned_time'] = 0  # seconds 
         learned_word = learned_words[word]
         history = learned_word['learn_history']
         learned_word['learn_history'] = self.generate_learn_history(history, answer)
         learned_word['mastered_score'] = self.count_mastered_score(word)
         learned_word['total_learned_time'] += learned_time
+
+        # Check if this word should be added/moved to studying/mastered words
+        self.update_learning_stat(word, learned_word['mastered_score'])
+
         # Save learning_data to data file
         self.save_data('LEARNING_DATA')
+
+    def update_learning_stat(self, word, mastered_score):
+        """
+        - Check if this word should be added/moved to studying/mastered words
+        - Decrease the familiar score for all other learned words 
+        """
+        # Should only in studying_words list 
+        if mastered_score < 100:
+            # If in list then move it to the end
+            if word in self.learning_data['studying_words']: 
+                self.learning_data['studying_words'].remove(word)
+            self.learning_data['studying_words'].append(word)
+
+            if word in self.learning_data['mastered_words']: 
+                self.learning_data['mastered_words'].remove(word)
+        else: # Should only in mastered_words list
+            if word not in self.learning_data['mastered_words']:
+                self.learning_data['mastered_words'].append(word)
+            if word in self.learning_data['studying_words']:
+                self.learning_data['studying_words'].remove(word)
+
+        # TODO: Decrease familiar score for others. Set current score MAX
+
 
     def generate_learn_history(self, s, answer):
         new_flag = '0'      # represent False
         if answer:
             new_flag = '1'
         s += new_flag
-        # Only stored last 20 records
-        return s[-20:]
+        # Only stored last MAX_HISTORY_RECORDS records
+        return s[-MAX_HISTORY_RECORDS:]
 
     def count_mastered_score(self, word):
         learned_words = self.learning_data['learned_words']
