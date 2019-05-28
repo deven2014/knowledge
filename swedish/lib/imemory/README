@@ -40,19 +40,21 @@ learning_data
     'good': {
       ref_idex: 123456,              /* Integer */ 
       learn_history: "100101010",    /* Last 20 times 1: correct, 0: incorrect */
+      mastered_flag: 0               /* If this word is mastered */
       mastered_score: 98,            /* 0 - 100 */
       familiar_score: 1000,          /* 0 - 1000*/
-      total_learned_time: 12312      /* Integer, seconds */
+      total_learned_time: 12312      /* Integer, seconds for total learned time */
+      mastered_learned_time: 12312   /* Integer, seconds for mastered the word */
     } , ...
   }
 }
 
-learningHistory   /* Original BigData: Snapshot for each word in learning situation */
+learning_history   /* Original BigData: Snapshot for each word in learning situation */
 {
   [
     {
-      time:                         /* UTC time */
-      learnedTime:                  /* Seconds in learning */
+      word:                         /* Learned word */
+      learned_time:                 /* Seconds in learning */
       answer:                       /* true, false */
     }
   ]

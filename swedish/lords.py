@@ -3,6 +3,7 @@
 import sys
 import lib.translator.translator as translator
 import lib.imemory.imemory as imemory
+import time
 
 """
 Author: Liang Deng
@@ -195,12 +196,13 @@ class LearnWords(object):
         self.policy = policy
         self.simple_ui = simple_ui
         self.start_index = int(learn_index)
+        self.last_time = time.clock()
         print(self.__str__())
         self.output_config()
 
         # Initiate Translator and iMemory instances
-        self.translator = translator.Translator('sv', 'en', True)
-        self.imemory = imemory.iMemory('usr1', 'sv', True)
+        self.translator = translator.Translator('sv', 'en', False)
+        self.imemory = imemory.iMemory('usr1', 'sv', False)
 
     def __str__(self):
         return('Learn words class V0.3. \nAuthor Liang Deng 2019.05.')
@@ -228,22 +230,40 @@ class LearnWords(object):
         word, index = self.imemory.get_next_learn_word()
         word_translation = self.translator.query(word)
         word_answer = True
-        # TODO:Get time
-        print(word, flush=True)
+
+        print(word, flush=True, end='')
+        # Record the learning start time
+        self.last_time = time.clock()
+
         self.hint_print('\n -- Enter \'y\' to indicate you know it. otherwise type \'n\'')
         s = getchar()
+
+        # Mastered a word
+        if s == 'a':
+            print(' ', word_translation)
+            self.hint_print(' -- Mastered this word. Enter or \'y\' to indicate your answer is correct. otherwise type \'n\' or any key')
+            s = getchar()
+            if s == '\n' or s == 'y' or s == 'a':
+                self.imemory.mastered_word(word)
+                return 1
+
         if s == '\n' or s == 'y':
-            self.hint_print_words('Explantation:')
+            self.hint_print_words(' Explantation:')
             print(' ', word_translation)
             self.hint_print(' -- Enter or \'y\' to indicate your answer is correct. otherwise type \'n\' or any key')
             s = getchar()
-            if s == 'n':
-                word_answer = False
+            if s == 'y':
+                word_answer = True 
         else:
             word_answer = False
             self.hint_print_words('Explantation:')
             print(' ', word_translation)
-        self.imemory.learn_word(word, 10, word_answer)
+
+        current_time = time.clock() 
+        # Int() will not return the closer integer value
+        learned_time = round((current_time - self.last_time) * 1000)
+        self.last_time = current_time
+        self.imemory.learn_word(word, learned_time, word_answer)
 
         return 1
 

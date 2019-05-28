@@ -6,11 +6,12 @@ MODULE_PATH = os.path.dirname(__file__)
 DATA_PATH = os.path.join(MODULE_PATH, 'data')
 UID_2_INDEX_FILE = 'uid2index.json'
 WORD_2_INDEX_FILE = 'word2index.json'
+LEARNING_HISTORY_FILE = 'learning.history'
 
 # A max score of mastered_score
 MASTERED_SCORE_MAX = 100
 # How long a mastered word should be reviewed at least once
-WORD_MUST_REVIEW_TIME = 100
+WORD_MUST_REVIEW_TIMES = 1000
 # Maximum 100 words in learning.
 LEARNING_WORD_WINDOW = 10
 
@@ -37,7 +38,7 @@ class iMemory:
 
     def __init__(self, uid, language = 'en', debug = False):
         self.learning_data = {}
-        self.learning_history = {}
+        self.learning_history = []
         self.words = None
         self.active = False
         self.language = language
@@ -131,18 +132,19 @@ class iMemory:
 
     def add_user_data(self, uid, dataindex):
         """
-        Add a new user data file and initiate it
+        Add a new user data file, learning_history file and initiate it
         For internal use only.
         """
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex))
+        learning_history_file = os.path.join(user_data_path, LEARNING_HISTORY_FILE)
         # If no user data dir then create it
         if os.path.isdir(user_data_path):
             self.simplelog('User data dir exists.')
         else:
             os.mkdir(user_data_path)
 
-        # If there is index data file then add user data failure 
+        # If there is user data file then add user data failure 
         if os.path.isfile(user_data_file):
             self.simplelog('User data file exists. add user data failure!')
             return False
@@ -161,48 +163,80 @@ class iMemory:
                 try:
                     json.dump(self.learning_data, fd)
                     self.simplelog('new user data saved.')
-                    return True
                 except:
                     self.simplelog('new user data is failure in saving!')
                     return False
 
+        # If there is learning history file then return failure 
+        if os.path.isfile(learning_history_file):
+            self.simplelog('Learning history file exists. add user data failure!')
+            return False
+        else:
+            self.learning_history = [] 
+            with open(learning_history_file, 'w+') as fd:
+                try:
+                    json.dump(self.learning_history, fd)
+                    self.simplelog('learning history data saved.')
+                except:
+                    self.simplelog('learning history data is failure in saving!')
+                    return False
+        return True
+
     def get_user_data(self, uid, dataindex):
         """
-        Get a new user data fro a user data file
+        Get a new user data, learning history from a user data file
         For internal use only.
         """
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex))
+        learning_history_file = os.path.join(user_data_path, LEARNING_HISTORY_FILE)
         # If no user data dir or user data file then then return false 
         if (not os.path.isdir(user_data_path) or
             not os.path.isfile(user_data_file)):
             self.simplelog('User data dir or file does not exist.')
             return False
 
-        # If there is index data file then add user data failure 
+        # If there is user data file then load user data failure 
         with open(user_data_file, 'r') as fd:
             try:
                 self.learning_data = json.load(fd)
                 self.simplelog('User data loaded successfully.')
-                return True
             except:
                 self.simplelog('User data loaded failure!')
                 return False
+
+        # If there is learning history data file then load user data failure 
+        with open(learning_history_file, 'r') as fd:
+            try:
+                self.learning_history = json.load(fd)
+                self.simplelog('Learning history data loaded successfully.')
+            except:
+                self.simplelog('Learning history data loaded failure!')
+                return False
+        return True 
 
     def save_data(self, datatype):
         dataindex = self.learning_data['dataindex']
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex))
+        learning_history_file = os.path.join(user_data_path, LEARNING_HISTORY_FILE)
+
         if datatype == 'LEARNING_DATA' or datatype == 'USER_DATA':
             with open(user_data_file, 'w+') as fd:
                 try:
                     json.dump(self.learning_data, fd)
-                    self.simplelog('User data saved.')
-                    return True
                 except:
                     self.simplelog('User data is failure in saving!')
                     return False
-        return False
+
+        if datatype == 'LEARNING_HISTORY_DATA':
+            with open(learning_history_file, 'w+') as fd:
+                try:
+                    json.dump(self.learning_history, fd)
+                except:
+                    self.simplelog('Learning history data is failure in saving!')
+                    return False
+        return True 
 
     # Interfaces 
     def reset_word(self, text, dataindex):
@@ -233,20 +267,6 @@ class iMemory:
                 self.simplelog("Review a mastered word.")
                 return (ret_word, self.words_index[ret_word])
 
-        """
-        Discarded
-        # The word with lowest score will be returned
-        min_mastered_score = MASTERED_SCORE_MAX
-        if(len(studying_words) >= LEARNING_WORD_WINDOW):
-            for word in studying_words:
-                learned_word = learned_words[word]
-                if learned_word['mastered_score'] < min_mastered_score:
-                    min_mastered_score = learned_word['mastered_score']
-                    ret_word = word
-        if ret_word:
-            self.simplelog("Review a studying word.")
-            return (ret_word, self.words_index[ret_word])
-        """
         # If the studying words exceed the windows size, return from this list
         # Return the studying word in the head of queue(first one in list)
         if(len(studying_words) >= LEARNING_WORD_WINDOW):
@@ -272,27 +292,43 @@ class iMemory:
         # TODO: index may exceed the taximun words
         return (word_text, index)
 
+    def mastered_word(self, word):
+        """
+        Notify that a word is mastered by user.
+        """ 
+        # Repeat call learn_word() until the score is 100
+        # Time set to 0 so that one can differciate it from normal words
+        repeat_times = len(MASTERED_SCORE_COUNT_CONFIG)
+        for i in range(repeat_times):
+            self.learn_word(word, 0, True)
+
     def learn_word(self, word, learned_time, answer):
         """
         Notify that the user has learned a word, requires update learning data
         of the user and relavent history data.
         """
-        print('learn_word(', word, learned_time, answer, ')')
+        #print('learn_word(', word, learned_time, answer, ')')
+
+        learned_words = self.learning_data['learned_words']
+        learned_word = None
+
+        # Store a history atomic record for this learn action
+        self.learning_history.append([word, learned_time, (1 if answer else 0)])
+
         self.learning_data['last_learned_word'] = word
         # If it is a new word move new_word_index to next
         if( (self.words_index[word]) == self.learning_data['new_word_index']):
             self.learning_data['new_word_index'] += 1
-        learned_words = self.learning_data['learned_words']
-        learned_word = None
 
         # Add a new learned word item
         if word not in learned_words:
             learned_words[word] = {}
             learned_words[word]['ref_index'] = -1
             learned_words[word]['learn_history'] = ''
-            learned_words[word]['ref_index'] = -1
+            learned_words[word]['mastered_flag'] = 0 
             learned_words[word]['mastered_score'] = 0      # 0 - 100
-            learned_words[word]['familiar_score'] = WORD_MUST_REVIEW_TIME
+            learned_words[word]['familiar_score'] = WORD_MUST_REVIEW_TIMES
+            learned_words[word]['mastered_learn_time'] = 0 # seconds 
             learned_words[word]['total_learned_time'] = 0  # seconds 
         learned_word = learned_words[word]
         history = learned_word['learn_history']
@@ -301,16 +337,25 @@ class iMemory:
         learned_word['total_learned_time'] += learned_time
 
         # Check if this word should be added/moved to studying/mastered words
+        # If the score reach 100 at first time record the time to mastered_learn_time
+        # Decrease the familiar score for all other learned words 
         self.update_learning_stat(word, learned_word['mastered_score'])
 
         # Save learning_data to data file
         self.save_data('LEARNING_DATA')
 
+        # Save learning_history to data file
+        self.save_data('LEARNING_HISTORY_DATA')
+
     def update_learning_stat(self, word, mastered_score):
         """
         - Check if this word should be added/moved to studying/mastered words
+        - If the score reach 100 at first time record the time to mastered_learn_time
         - Decrease the familiar score for all other learned words 
         """
+        learned_words = self.learning_data['learned_words']
+        learned_word = learned_words[word]
+
         # Should only in studying_words list 
         if mastered_score < 100:
             # If in list then move it to the end
@@ -326,8 +371,15 @@ class iMemory:
             if word in self.learning_data['studying_words']:
                 self.learning_data['studying_words'].remove(word)
 
-        # TODO: Decrease familiar score for others. Set current score MAX
+        # If the score reach 100 at first time record the time to mastered_learn_time
+        if mastered_score >= 100 and not learned_word['mastered_flag']:
+            learned_word['mastered_flag'] = 1
+            learned_word['mastered_learn_time'] = learned_word['total_learned_time']
 
+        # Decrease familiar score for others. Set current score WORD_MUST_REVIEW_TIMES
+        learned_word['familiar_score'] = WORD_MUST_REVIEW_TIMES
+        for word_text in learned_words:
+            learned_words[word_text]['familiar_score'] -= 1 
 
     def generate_learn_history(self, s, answer):
         new_flag = '0'      # represent False
