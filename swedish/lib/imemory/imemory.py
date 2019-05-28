@@ -245,8 +245,11 @@ class iMemory:
     def set_user_desc(self, uid, desc):
         return 0
 
-    def get_user_learning_history(self, uid, dataindex):
-        return 0
+    def print_user_learning_data(self):
+        print(self.learning_data)
+
+    def print_user_learning_history(self):
+        print(self.learning_history)
 
     def get_next_learn_word(self):
         """
@@ -325,7 +328,7 @@ class iMemory:
             learned_words[word] = {}
             learned_words[word]['ref_index'] = -1
             learned_words[word]['learn_history'] = ''
-            learned_words[word]['mastered_flag'] = 0 
+            learned_words[word]['mastered_flag'] = 0
             learned_words[word]['mastered_score'] = 0      # 0 - 100
             learned_words[word]['familiar_score'] = WORD_MUST_REVIEW_TIMES
             learned_words[word]['mastered_learn_time'] = 0 # seconds 
@@ -351,7 +354,7 @@ class iMemory:
         """
         - Check if this word should be added/moved to studying/mastered words
         - If the score reach 100 at first time record the time to mastered_learn_time
-        - Decrease the familiar score for all other learned words 
+        - Decrease the familiar score for all other learned words
         """
         learned_words = self.learning_data['learned_words']
         learned_word = learned_words[word]
@@ -359,11 +362,11 @@ class iMemory:
         # Should only in studying_words list 
         if mastered_score < 100:
             # If in list then move it to the end
-            if word in self.learning_data['studying_words']: 
+            if word in self.learning_data['studying_words']:
                 self.learning_data['studying_words'].remove(word)
             self.learning_data['studying_words'].append(word)
 
-            if word in self.learning_data['mastered_words']: 
+            if word in self.learning_data['mastered_words']:
                 self.learning_data['mastered_words'].remove(word)
         else: # Should only in mastered_words list
             if word not in self.learning_data['mastered_words']:
@@ -375,11 +378,17 @@ class iMemory:
         if mastered_score >= 100 and not learned_word['mastered_flag']:
             learned_word['mastered_flag'] = 1
             learned_word['mastered_learn_time'] = learned_word['total_learned_time']
+        # If this is a review for mastered word then add 'mastered_flag' for reduce the frequency of
+        # reviewing mastered words
+        elif mastered_score >= 100 and learned_word['mastered_flag']:
+            learned_word['mastered_flag'] += 1
 
-        # Decrease familiar score for others. Set current score WORD_MUST_REVIEW_TIMES
-        learned_word['familiar_score'] = WORD_MUST_REVIEW_TIMES
+        # Decrease familiar score for others. Set current score WORD_MUST_REVIEW_TIMES * 
+        # [mastered_flag]
+        n =  learned_word['mastered_flag']
+        learned_word['familiar_score'] = WORD_MUST_REVIEW_TIMES * n
         for word_text in learned_words:
-            learned_words[word_text]['familiar_score'] -= 1 
+            learned_words[word_text]['familiar_score'] -= 1
 
     def generate_learn_history(self, s, answer):
         new_flag = '0'      # represent False

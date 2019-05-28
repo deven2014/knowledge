@@ -194,6 +194,7 @@ class LearnWords(object):
         """
         """
         self.policy = policy
+        self.firstloop = True 
         self.simple_ui = simple_ui
         self.start_index = int(learn_index)
         self.last_time = time.clock()
@@ -224,9 +225,29 @@ class LearnWords(object):
         if not self.simple_ui:
             print(*args, end='', flush=True)
 
+    def show_menu(self):
+        # Ask if need show user data
+        if(self.firstloop):
+            print('Will you want to view learning data?')
+            print('1: Only learning data')
+            print('2: Only learning history data')
+            print('3: All data')
+            print('n: No need', flush=True)
+            s = getchar()
+            if s == '1' or s == '3':
+                self.imemory.print_user_learning_data()
+            if s == '2' or s == '3':
+                self.imemory.print_user_learning_history_data()
+
     def run(self):
         """
         """
+        # First loop show menu 
+        if(self.firstloop):
+            self.show_menu()
+            self.firstloop = False
+            print('\nStart learn word\n')
+
         word, index = self.imemory.get_next_learn_word()
         word_translation = self.translator.query(word)
         word_answer = True
