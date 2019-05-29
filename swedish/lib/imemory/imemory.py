@@ -13,7 +13,7 @@ MASTERED_SCORE_MAX = 100
 # How long a mastered word should be reviewed at least once
 WORD_MUST_REVIEW_TIMES = 1000
 # Maximum 100 words in learning.
-LEARNING_WORD_WINDOW = 10
+LEARNING_WORD_WINDOW = 100
 
 MAX_HISTORY_RECORDS = 25
 # Mastered score counting config, total 100
@@ -154,6 +154,7 @@ class iMemory:
             self.learning_data['description'] = ''
             self.learning_data['new_word_index'] = 0
             self.learning_data['last_learned_word'] = ''
+            self.learning_data['total_learned_time'] = 0
             self.learning_data['studying_words'] = []
             self.learning_data['mastered_words'] = []
             # All learned word statistics
@@ -172,14 +173,8 @@ class iMemory:
             self.simplelog('Learning history file exists. add user data failure!')
             return False
         else:
-            self.learning_history = [] 
-            with open(learning_history_file, 'w+') as fd:
-                try:
-                    json.dump(self.learning_history, fd)
-                    self.simplelog('learning history data saved.')
-                except:
-                    self.simplelog('learning history data is failure in saving!')
-                    return False
+            self.learning_history = []
+            return self.save_data('LEARNING_HISTORY_DATA',' ')
         return True
 
     def get_user_data(self, uid, dataindex):
@@ -200,12 +195,19 @@ class iMemory:
         with open(user_data_file, 'r') as fd:
             try:
                 self.learning_data = json.load(fd)
+
+                # For old database compatible
+                if 'total_learned_time' not in self.learning_data:
+                    self.learning_data['total_learned_time'] = 0
+
                 self.simplelog('User data loaded successfully.')
             except:
                 self.simplelog('User data loaded failure!')
                 return False
 
         # If there is learning history data file then load user data failure 
+        # history will not realtime readable
+        """
         with open(learning_history_file, 'r') as fd:
             try:
                 self.learning_history = json.load(fd)
@@ -213,9 +215,10 @@ class iMemory:
             except:
                 self.simplelog('Learning history data loaded failure!')
                 return False
-        return True 
+        """
+        return True
 
-    def save_data(self, datatype):
+    def save_data(self, datatype, data = None):
         dataindex = self.learning_data['dataindex']
         user_data_path = os.path.join(DATA_PATH, str(dataindex))
         user_data_file = os.path.join(user_data_path, str(dataindex))
@@ -229,6 +232,10 @@ class iMemory:
                     self.simplelog('User data is failure in saving!')
                     return False
 
+        # TODO: should seperate the history file to many files. and improve the efficiency
+        if datatype == 'LEARNING_HISTORY_DATA':
+            return self.save_learning_history_data(data)
+        """
         if datatype == 'LEARNING_HISTORY_DATA':
             with open(learning_history_file, 'w+') as fd:
                 try:
@@ -236,7 +243,24 @@ class iMemory:
                 except:
                     self.simplelog('Learning history data is failure in saving!')
                     return False
-        return True 
+        """
+        return True
+
+    def save_learning_history_data(self, data):
+        """
+        Save a new record of learning history.
+        """
+        dataindex = self.learning_data['dataindex']
+        user_data_path = os.path.join(DATA_PATH, str(dataindex))
+        learning_history_file = os.path.join(user_data_path, LEARNING_HISTORY_FILE)
+        if not data:
+            return False
+        with open(learning_history_file, 'a') as fd:
+            try:
+                fd.write(data+'\n')
+            except:
+                self.simplelog('Learning history data is failure in saving!')
+        return True
 
     # Interfaces 
     def reset_word(self, text, dataindex):
@@ -245,11 +269,23 @@ class iMemory:
     def set_user_desc(self, uid, desc):
         return 0
 
+    def print_brief_user_info(self):
+        print('========== User learning brief info =================')
+        print('User ID:               ', self.learning_data['uid'])
+        print('User description:      ', self.learning_data['description'])
+        print('Total learned time:    ', self.learning_data['total_learned_time'])
+        print('New word index:        ', self.learning_data['new_word_index'])
+        print('Studying word numbers: ', len(self.learning_data['studying_words']))
+        print('Studying words:', self.learning_data['studying_words'])
+        print('Mastered word numbers: ', len(self.learning_data['mastered_words']))
+        print('=====================================================')
+
     def print_user_learning_data(self):
         print(self.learning_data)
 
     def print_user_learning_history(self):
-        print(self.learning_history)
+        #print(self.learning_history)
+        return True
 
     def get_next_learn_word(self):
         """
@@ -316,7 +352,9 @@ class iMemory:
         learned_word = None
 
         # Store a history atomic record for this learn action
-        self.learning_history.append([word, learned_time, (1 if answer else 0)])
+        self.save_data('LEARNING_HISTORY_DATA',
+                       str([word, learned_time, (1 if answer else 0)])[1:-1])
+        #self.learning_history.append([word, learned_time, (1 if answer else 0)])
 
         self.learning_data['last_learned_word'] = word
         # If it is a new word move new_word_index to next
@@ -339,6 +377,9 @@ class iMemory:
         learned_word['mastered_score'] = self.count_mastered_score(word)
         learned_word['total_learned_time'] += learned_time
 
+        # The total learned time for a user also add the time
+        self.learning_data['total_learned_time'] += learned_time
+
         # Check if this word should be added/moved to studying/mastered words
         # If the score reach 100 at first time record the time to mastered_learn_time
         # Decrease the familiar score for all other learned words 
@@ -346,9 +387,6 @@ class iMemory:
 
         # Save learning_data to data file
         self.save_data('LEARNING_DATA')
-
-        # Save learning_history to data file
-        self.save_data('LEARNING_HISTORY_DATA')
 
     def update_learning_stat(self, word, mastered_score):
         """

@@ -34,6 +34,7 @@ learning_data
   description "",       /* Description for the usage of the data */
   new_word_index: 0     /* Next new word index in dict 
   last_learned_word: 'text'   /* last learned word */
+  total_learned_time:         /* For brief stat info, second */
   studying_words: [ "a", "b", "c" ] 
   mastered_words: [ "d", "e", "f" ]
   learned_words: { 

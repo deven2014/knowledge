@@ -229,14 +229,17 @@ class LearnWords(object):
         # Ask if need show user data
         if(self.firstloop):
             print('Will you want to view learning data?')
-            print('1: Only learning data')
-            print('2: Only learning history data')
-            print('3: All data')
+            print('1: Only brief learning data')
+            print('2: Only detail learning data')
+            print('3: Only learning history data')
+            print('4: All data')
             print('n: No need', flush=True)
             s = getchar()
-            if s == '1' or s == '3':
+            if s == '1' or s == '4':
+                self.imemory.print_brief_user_info()
+            if s == '2' or s == '4':
                 self.imemory.print_user_learning_data()
-            if s == '2' or s == '3':
+            if s == '3' or s == '4':
                 self.imemory.print_user_learning_history_data()
 
     def run(self):
