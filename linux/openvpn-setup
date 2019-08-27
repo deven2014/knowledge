@@ -1,0 +1,48 @@
+# How to setup OpenVPN on Ubuntu Linux
+
+reference:
+https://www.cyberciti.biz/faq/howto-setup-openvpn-server-on-ubuntu-linux-14-04-or-16-04-lts/
+
+server setting(example use a public import as 139.59.1.155):
+
+1. Get OpenVPN installation script
+$ wget https://git.io/vpn -O openvpn-install.sh
+
+2. Install OpenVPN
+When prompted set IP address to 139.59.1.155 and Port to 1194. Use Google or OpenDNS DNS servers with the vpn. Next, type client name (such as iPhone, Nexus6, LinuxRouter etc). Finally, press [Enter] key to install and set up OpenVPN on your system:
+$ sudo bash openvpn-install.sh
+
+3. Add firewall rules, for example:
+$ vi /etc/rc.local
+add these rules to enable transfer packages.
+iptables -I FORWARD -m statetate RELATED,ESTABLISHED -j ACCEPT
+iptables -I FORWARD -s 10.8.0.0/24 -j ACCEPT
+iptables -I INPUT -p udp --dport 1194 -j ACCEPT
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -j SNAT --to 139.59.1.155  
+
+4. Check and view config (optional)
+$ sudo more /etc/openvpn/server.conf 
+
+5. Start/stop/restart
+$ sudo systemctl stop openvpn@server
+$ sudo systemctl start openvpn@server
+$ sudo systemctl restart openvpn@server
+
+client on linux setting:
+
+1. Install OpenVPN
+$ sudo apt install openvpn
+
+2. Copy config file
+$ scp user@139.59.1.155:~/iphone.ovpn .
+$ sudo cp iphone.ovpn /etc/openvpn/client.conf
+
+3. Test connectivity
+$ sudo openvpn --client --config /etc/openvpn/client.conf
+
+4. Start OpenVPN
+$ sudo /etc/init.d/openvpn start
+or
+$ sudo systemctl start openvpn@client
+
+
