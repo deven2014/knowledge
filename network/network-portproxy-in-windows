@@ -1,0 +1,31 @@
+# How to setup port proxy in windows 
+
+Description
+
+- host connects to internet/intranet.
+- guest connects to host
+- enable guest to connect some internet/intranet servers
+
+There is a tool netsh can support port proxy in Windows. It is fair easy to setup port proxy config.
+
+Steps:
+
+
+C:\Windows\system32>netsh interface portproxy add v4tov4 listenport=4551 connectaddress=10.46.28.157
+C:\Windows\system32>netsh interface portproxy add v4tov4 listenport=7070 connectaddress=10.46.28.157
+C:\Windows\system32>netsh interface portproxy add v4tov4 listenport=9000 connectaddress=10.46.28.157
+C:\Windows\system32>netsh interface portproxy add v4tov4 listenport=80 connectaddress=169.254.1.1
+
+C:\Windows\system32>netsh interface portproxy show all
+
+Listen on ipv4:             Connect to ipv4:
+
+Address         Port        Address         Port
+--------------- ----------  --------------- ----------
+*               4551        10.46.28.157    4551
+*               7070        10.46.28.157    7070
+*               9000        10.46.28.157    9000
+*               80          169.254.1.1     80
+
+This config will let host transfer all TCP packages with destination port 4551/7070/9000 to .157 server. And also let host transfer all TCP packages with destination port as 80 to guest (169.254.1.1) 
+Depend on the requirement, There might be better config than this.
