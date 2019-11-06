@@ -1,0 +1,21 @@
+# integrate ctags in vim
+
+Simple way to integrate ctags in vim for convience useage of c++ code
+
+1. Install ctags
+
+sudo apt-get install universal-ctags
+or 
+sudo apt-get install exuberant-ctags
+
+the first one is active project to replace the second one (traditional ctags)
+
+2. Search source files to a list file
+
+find . -name "*.h" -o -name "*.c" -o -name "*.cpp" > ctags.files
+
+3. Generate tags file, "tags" file will be generated in the dir
+ctags -L ctags.files
+
+4. In the opened .cpp file in VIM, you can use "CTRL + ]" from function declartion jump 
+to function definition, and "CTRL + T" jump back to function definition.
